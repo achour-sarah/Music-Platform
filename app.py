@@ -35,77 +35,95 @@ st.markdown("""
     }
     
     .stApp {
-        background: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #0f172a 90%);
-        color: #f8fafc;
+        background: radial-gradient(circle at 50% 50%, #0d0e15 0%, #050608 100%);
+        color: #e2e8f0;
     }
     
-    /* Glassmorphism Cards */
+    /* Premium Glassmorphism Cards */
     .glass-card {
-        background: rgba(30, 41, 59, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(13, 14, 21, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.04);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         margin-bottom: 20px;
     }
     
+    /* Music-Themed KPI Cards */
     .glass-kpi {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
-        border: 1px solid rgba(99, 102, 241, 0.25);
-        border-radius: 12px;
-        padding: 20px;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.02) 100%);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 14px;
+        padding: 22px;
         text-align: center;
-        box-shadow: 0 4px 20px 0 rgba(99, 102, 241, 0.1);
-        transition: transform 0.3s ease;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .glass-kpi:hover {
-        transform: translateY(-5px);
-        border-color: rgba(168, 85, 247, 0.5);
+        transform: translateY(-4px);
+        border-color: rgba(236, 72, 153, 0.4);
+        box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.15);
     }
     
-    /* Header Gradient styling */
+    /* Musical Neon Gradient Title */
     .title-gradient {
-        background: linear-gradient(90deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+        background: linear-gradient(90deg, #a78bfa 0%, #f472b6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900;
-        font-size: 2.8rem;
-        margin-bottom: 5px;
+        font-size: 3rem;
+        margin-bottom: 2px;
+        letter-spacing: -0.03em;
     }
     
     .subtitle-text {
         color: #94a3b8;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         margin-bottom: 30px;
+        font-weight: 300;
     }
     
-    /* Styled buttons */
+    /* Neon Styled Buttons */
     .stButton>button {
-        background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%) !important;
+        background: linear-gradient(90deg, #7c3aed 0%, #db2777 100%) !important;
         color: white !important;
         border: none !important;
-        padding: 10px 24px !important;
-        border-radius: 8px !important;
+        padding: 12px 28px !important;
+        border-radius: 10px !important;
         font-weight: 600 !important;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.02em !important;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25) !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        transform: scale(1.02) !important;
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(219, 39, 119, 0.4) !important;
     }
     
-    /* Chat layout styling */
+    /* SQL Code Block */
     .sql-query-box {
-        background-color: #020617;
-        border-left: 4px solid #10b981;
-        padding: 12px;
-        font-family: monospace;
-        color: #34d399;
-        margin: 10px 0;
-        border-radius: 0 8px 8px 0;
+        background-color: #08090e;
+        border-left: 4px solid #db2777;
+        padding: 14px;
+        font-family: 'Courier New', Courier, monospace;
+        color: #f472b6;
+        margin: 12px 0;
+        border-radius: 0 10px 10px 0;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Streamlit overrides for inputs */
+    div[data-baseweb="select"] > div {
+        background-color: rgba(13, 14, 21, 0.8) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    input {
+        background-color: rgba(13, 14, 21, 0.8) !important;
+        color: white !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
     }
 </style>
 """, unsafe_allow_html=True)
