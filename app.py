@@ -5,10 +5,59 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from src.ai.conversational_assistant import answer_question
+import requests
+from src.ai.conversational_assistant import answer_question as local_answer_question
 from src.ai.genre_classifier import predict_genre
-from src.ai.engagement_predictor import predict_engagement
-from src.ai.audio_genre_classifier import predict_genre_from_audio
+from src.ai.engagement_predictor import predict_engagement as local_predict_engagement
+from src.ai.audio_genre_classifier import predict_genre_from_audio as local_predict_genre_from_audio
+
+# FastAPI endpoint URL
+API_URL = "http://127.0.0.1:8000"
+
+def predict_genre_from_audio(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            response = requests.post(f"{API_URL}/predict-genre", files={"file": f}, timeout=15)
+        if response.status_code == 200:
+            res = response.json()
+            st.sidebar.caption("⚡ Via FastAPI Backend")
+            return res["predicted_genre"], res["confidence"]
+    except Exception:
+        pass
+    st.sidebar.caption("🔌 Local Fallback (FastAPI Offline)")
+    return local_predict_genre_from_audio(file_path)
+
+def predict_engagement(duration, bit_rate, favorites_track, album_tracks_count, album_listens, album_favorites, genre_top):
+    try:
+        payload = {
+            "duration": duration,
+            "bit_rate": bit_rate,
+            "favorites_track": favorites_track,
+            "album_tracks_count": album_tracks_count,
+            "album_listens": album_listens,
+            "album_favorites": album_favorites,
+            "genre_top": genre_top
+        }
+        response = requests.post(f"{API_URL}/predict-engagement", json=payload, timeout=5)
+        if response.status_code == 200:
+            st.sidebar.caption("⚡ Via FastAPI Backend")
+            return response.json()["predicted_listens"]
+    except Exception:
+        pass
+    st.sidebar.caption("🔌 Local Fallback (FastAPI Offline)")
+    return local_predict_engagement(duration, bit_rate, favorites_track, album_tracks_count, album_listens, album_favorites, genre_top)
+
+def answer_question(question):
+    try:
+        response = requests.post(f"{API_URL}/ask-assistant", json={"question": question}, timeout=15)
+        if response.status_code == 200:
+            res = response.json()
+            st.sidebar.caption("⚡ Via FastAPI Backend")
+            return res["response"], res["sql_query"]
+    except Exception:
+        pass
+    st.sidebar.caption("🔌 Local Fallback (FastAPI Offline)")
+    return local_answer_question(question)
 
 # Set Page Config
 st.set_page_config(
