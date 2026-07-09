@@ -1,0 +1,158 @@
+name: Music Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn xgboost torch transformers sentence-transformers tf-keras prefect google-generativeai python-dotenv pyarrow pytest
+
+    - name: Create Mock Raw Data for CI
+      run: |
+        python -c "
+        import os, pandas as pd
+        os.makedirs('data/fma_metadata', exist_ok=True)
+        # Create dummy genres.csv
+        df_genres = pd.DataFrame({
+            'genre_id': [1, 21], 
+            '#tracks': [10, 20], 
+            'parent': [0, 1], 
+            'title': ['Rock', 'Hip-Hop'], 
+            'top_level': [1, 21]
+        })
+        df_genres.to_csv('data/fma_metadata/genres.csv', index=False)
+        
+        # Create dummy raw_tracks.csv
+        df_tracks = pd.DataFrame({
+            'track_id': [2, 3],
+            'album_id': [1, 1],
+            'album_title': ['AWOL - A Way Of Life', 'AWOL - A Way Of Life'],
+            'album_url': ['http://url', 'http://url'],
+            'artist_id': [1, 1],
+            'artist_name': ['AWOL', 'AWOL'],
+            'artist_url': ['http://url', 'http://url'],
+            'artist_website': ['http://web', 'http://web'],
+            'license_image_file': ['', ''],
+            'license_image_file_large': ['', ''],
+            'license_parent_id': [0, 0],
+            'license_title': ['Creative Commons', 'Creative Commons'],
+            'license_url': ['http://url', 'http://url'],
+            'tags': ['[]', '[]'],
+            'track_bit_rate': [256000, 256000],
+            'track_comments': [0, 0],
+            'track_composer': ['', ''],
+            'track_copyright_c': ['', ''],
+            'track_copyright_p': ['', ''],
+            'track_date_created': ['2008-11-26 01:48:12', '2008-11-26 01:48:12'],
+            'track_date_recorded': ['', ''],
+            'track_disc_number': [1, 1],
+            'track_duration': [168, 168],
+            'track_explicit': ['', ''],
+            'track_explicit_notes': ['', ''],
+            'track_favorites': [2, 2],
+            'track_file': ['', ''],
+            'track_genres': [\"[{'genre_id': '21', 'genre_title': 'Hip-Hop', 'genre_url': 'http://freemusicarchive.org/genre/Hip-Hop/'}]\", \"[{'genre_id': '21', 'genre_title': 'Hip-Hop', 'genre_url': 'http://freemusicarchive.org/genre/Hip-Hop/'}]\"],
+            'track_image_file': ['', ''],
+            'track_information': ['', ''],
+            'track_instrumental': [0, 0],
+            'track_interest': [100, 100],
+            'track_language_code': ['en', 'en'],
+            'track_listens': [1293, 1293],
+            'track_lyricist': ['', ''],
+            'track_number': [1, 2],
+            'track_publisher': ['', ''],
+            'track_title': ['Food', 'Electric Ave'],
+            'track_url': ['http://url', 'http://url']
+        })
+        df_tracks.to_csv('data/fma_metadata/raw_tracks.csv', index=False)
+        
+        # Create dummy raw_albums.csv
+        df_albums = pd.DataFrame({
+            'album_id': [1],
+            'album_comments': [0],
+            'album_date_created': ['2008-11-26 01:48:12'],
+            'album_date_released': ['2009-01-05'],
+            'album_engineer': [''],
+            'album_favorites': [4],
+            'album_handle': ['handle'],
+            'album_image_file': [''],
+            'album_images': [''],
+            'album_information': [''],
+            'album_listens': [6073],
+            'album_producer': [''],
+            'album_title': ['AWOL - A Way Of Life'],
+            'album_tracks': [7],
+            'album_type': ['Album'],
+            'album_url': ['http://url'],
+            'artist_name': ['AWOL'],
+            'artist_url': ['http://url'],
+            'tags': ['[]']
+        })
+        df_albums.to_csv('data/fma_metadata/raw_albums.csv', index=False)
+        
+        # Create dummy raw_artists.csv
+        df_artists = pd.DataFrame({
+            'artist_id': [1],
+            'artist_active_year_begin': [''],
+            'artist_active_year_end': [''],
+            'artist_associated_labels': [''],
+            'artist_bio': ['A NJ Collective...'],
+            'artist_comments': [0],
+            'artist_contact': [''],
+            'artist_date_created': ['2008-11-26 01:48:12'],
+            'artist_donation_url': [''],
+            'artist_favorites': [10],
+            'artist_flattr_name': [''],
+            'artist_handle': ['handle'],
+            'artist_image_file': [''],
+            'artist_images': [''],
+            'artist_latitude': [40.0583],
+            'artist_location': ['New Jersey'],
+            'artist_longitude': [-74.4056],
+            'artist_members': [''],
+            'artist_name': ['AWOL'],
+            'artist_paypal_name': [''],
+            'artist_related_projects': [''],
+            'artist_url': ['http://url'],
+            'artist_website': ['http://web'],
+            'artist_wikipedia_page': [''],
+            'tags': ['[]']
+        })
+        df_artists.to_csv('data/fma_metadata/raw_artists.csv', index=False)
+        "
+
+    - name: Run ETL Setup and Ingestion
+      run: |
+        python src/etl/setup_datalake.py
+
+    - name: Run Prefect ETL Pipeline
+      run: |
+        python src/etl/pipeline.py
+
+    - name: Run Model Training (Generate Mock Weights)
+      run: |
+        # Set up a dummy .env for Gemini call bypass in testing
+        echo "GEMINI_API_KEY=mock_key_for_testing" > .env
+        python -m src.ai.genre_classifier
+        python -m src.ai.engagement_predictor
+
+    - name: Run Unit Tests
+      run: |
+        python -m pytest tests/

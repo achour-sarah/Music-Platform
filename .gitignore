@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environnement local
+.env
+venv/
+.venv/
+env/
+
+# ⚠️ Fichiers de données (Datalake, Audio, CSV, DB)
+# Ne JAMAIS pousser de gros volumes ou de fichiers média sur Github (limite 100 Mo)
+data/
+*.npy
+*.db
+*.csv
+*.parquet
+*.mp3
+*.wav
+temp_*.wav
+temp_*.mp3
+
+# IDEs et OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
