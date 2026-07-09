@@ -24,52 +24,67 @@ DB_PATH = os.path.join(BASE_DIR, "data", "datalake", "gold", "catalog.db")
 BRONZE_DIR = os.path.join(BASE_DIR, "data", "datalake", "bronze")
 MODEL_DIR = os.path.join(BASE_DIR, "src", "ai")
 
-# 1. Custom CSS Styling (Dark Glassmorphism UI)
+# 1. Custom CSS Styling (Light Premium UI)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap');
     
-    /* Global Typography & Background */
+    /* Global Typography & Light Background */
     html, body, [class*="css"], .stMarkdown {
         font-family: 'Outfit', sans-serif !important;
     }
     
     .stApp {
-        background: radial-gradient(circle at 50% 50%, #0d0e15 0%, #050608 100%);
-        color: #e2e8f0;
+        background: radial-gradient(circle at 50% 50%, #fcfdfd 0%, #f1f5f9 100%);
+        color: #1e293b !important;
     }
     
-    /* Premium Glassmorphism Cards */
+    /* Light Mode headings and text overrides */
+    h1, h2, h3, h4, h5, h6, p, span, label {
+        color: #0f172a !important;
+    }
+    
+    /* Premium Light Glassmorphism Cards */
     .glass-card {
-        background: rgba(13, 14, 21, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(0, 0, 0, 0.05);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+        box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.03);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         margin-bottom: 20px;
     }
     
-    /* Music-Themed KPI Cards */
+    /* Light Music-Themed KPI Cards */
     .glass-kpi {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.02) 100%);
-        border: 1px solid rgba(139, 92, 246, 0.2);
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(236, 72, 153, 0.01) 100%);
+        border: 1px solid rgba(124, 58, 237, 0.15);
         border-radius: 14px;
         padding: 22px;
         text-align: center;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.02);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .glass-kpi:hover {
         transform: translateY(-4px);
-        border-color: rgba(236, 72, 153, 0.4);
-        box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.15);
+        border-color: rgba(236, 72, 153, 0.3);
+        box-shadow: 0 8px 30px 0 rgba(124, 58, 237, 0.1);
     }
     
-    /* Musical Neon Gradient Title */
+    /* Override hardcoded inline white/light colors for KPIs */
+    .glass-kpi p {
+        color: #4f46e5 !important; /* Soft Indigo */
+        font-weight: 600 !important;
+    }
+    .glass-kpi h2 {
+        color: #0f172a !important; /* Dark charcoal */
+        font-weight: 800 !important;
+    }
+    
+    /* Musical Gradient Title */
     .title-gradient {
-        background: linear-gradient(90deg, #a78bfa 0%, #f472b6 100%);
+        background: linear-gradient(90deg, #6d28d9 0%, #db2777 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900;
@@ -79,13 +94,13 @@ st.markdown("""
     }
     
     .subtitle-text {
-        color: #94a3b8;
+        color: #475569 !important;
         font-size: 1.15rem;
         margin-bottom: 30px;
-        font-weight: 300;
+        font-weight: 400;
     }
     
-    /* Neon Styled Buttons */
+    /* Styled Buttons */
     .stButton>button {
         background: linear-gradient(90deg, #7c3aed 0%, #db2777 100%) !important;
         color: white !important;
@@ -95,41 +110,52 @@ st.markdown("""
         font-weight: 600 !important;
         font-size: 0.95rem !important;
         letter-spacing: 0.02em !important;
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25) !important;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15) !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(219, 39, 119, 0.4) !important;
+        box-shadow: 0 8px 25px rgba(219, 39, 119, 0.25) !important;
     }
     
-    /* SQL Code Block */
+    /* SQL Code Block (remains dark for coding readability) */
     .sql-query-box {
-        background-color: #08090e;
+        background-color: #0f172a;
         border-left: 4px solid #db2777;
         padding: 14px;
         font-family: 'Courier New', Courier, monospace;
         color: #f472b6;
         margin: 12px 0;
         border-radius: 0 10px 10px 0;
-        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .sql-query-box code {
+        color: #f472b6 !important;
     }
     
-    /* Streamlit overrides for inputs */
+    /* Streamlit input overrides (light fields with dark borders/text) */
     div[data-baseweb="select"] > div {
-        background-color: rgba(13, 14, 21, 0.8) !important;
-        border-color: rgba(255, 255, 255, 0.08) !important;
+        background-color: #ffffff !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
+        color: #0f172a !important;
     }
     input {
-        background-color: rgba(13, 14, 21, 0.8) !important;
-        color: white !important;
-        border-color: rgba(255, 255, 255, 0.08) !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
     }
     
-    /* Modernized Sidebar Navigation Menu */
+    /* Modernized Light Sidebar Menu */
     section[data-testid="stSidebar"] {
-        background-color: #08090d !important; /* Zinc 950 / Slate 950 background */
-        border-right: 1px solid rgba(255, 255, 255, 0.04);
+        background-color: #f8fafc !important; /* Light silver/slate */
+        border-right: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    
+    section[data-testid="stSidebar"] h2 {
+        color: #6d28d9 !important; /* Purple sidebar header */
+    }
+    section[data-testid="stSidebar"] p {
+        color: #475569 !important;
     }
     
     section[data-testid="stSidebar"] .stRadio > label {
@@ -167,36 +193,41 @@ st.markdown("""
         transition: all 0.2s ease !important;
     }
     
-    /* Hover state: subtle background nuance, text brightens, indicator grows slightly */
+    /* Hover state: subtle background nuance, text darkens, indicator grows slightly */
     section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(255, 255, 255, 0.03) !important;
+        background-color: rgba(0, 0, 0, 0.02) !important;
     }
     section[data-testid="stSidebar"] div[role="radiogroup"] label:hover div[data-testid="stMarkdownContainer"] p {
-        color: #ffffff !important;
+        color: #0f172a !important;
     }
     section[data-testid="stSidebar"] div[role="radiogroup"] label:hover::before {
-        background-color: rgba(139, 92, 246, 0.5) !important;
+        background-color: rgba(109, 40, 217, 0.5) !important;
         height: 50% !important;
     }
     
     /* Checked/Selected state: glowing background gradient, active neon indicator */
     section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-        background: linear-gradient(90deg, rgba(139, 92, 246, 0.08) 0%, rgba(236, 72, 153, 0.02) 100%) !important;
-        border-color: rgba(139, 92, 246, 0.1) !important;
+        background: linear-gradient(90deg, rgba(109, 40, 217, 0.06) 0%, rgba(219, 39, 119, 0.01) 100%) !important;
+        border-color: rgba(109, 40, 217, 0.15) !important;
     }
     
     section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked)::before {
-        background-color: #a78bfa !important; /* Active purple neon indicator */
+        background-color: #6d28d9 !important; /* Active purple indicator */
         height: 60% !important;
-        box-shadow: 0 0 10px #a78bfa !important;
+        box-shadow: 0 0 8px #6d28d9 !important;
     }
     
     section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
-        color: #a78bfa !important; /* Purple neon text */
+        color: #6d28d9 !important; /* Active purple text */
         font-weight: 600 !important;
     }
     
-    /* Hide the ugly default Streamlit radio circles */
+    /* Default menu options text color */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] p {
+        color: #334155 !important;
+    }
+    
+    /* Hide default radio circle markers */
     section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarker"] {
         display: none !important;
     }
