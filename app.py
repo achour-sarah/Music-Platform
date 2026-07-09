@@ -224,11 +224,11 @@ with st.sidebar:
     navigation = st.radio(
         "Navigation",
         [
-            "📊 Tableau de Bord & Catalogue",
-            "🔮 Auto-Classificateur (Option B)",
-            "📈 Engagement Predictor (Option C)",
-            "💬 Assistant IA Gemini (Option A)",
-            "🛡️ Gouvernance & Pipelines"
+            "Tableau de Bord & Catalogue",
+            "Auto-Classificateur (Option B)",
+            "Engagement Predictor (Option C)",
+            "Assistant IA Gemini (Option A)",
+            "Gouvernance & Pipelines"
         ]
     )
     
@@ -244,7 +244,7 @@ with st.sidebar:
 st.markdown("<h1 class='title-gradient'>Music Analytics & IA Platform</h1>", unsafe_allow_html=True)
 
 # ----------------- PAGE 1: DASHBOARD & CATALOG -----------------
-if navigation == "📊 Tableau de Bord & Catalogue":
+if navigation == "Tableau de Bord & Catalogue":
     st.markdown("<p class='subtitle-text'>Explorez le catalogue de musique centralisé et écoutez les fichiers audio de la zone Bronze</p>", unsafe_allow_html=True)
     
     # Load KPIs
@@ -383,7 +383,7 @@ if navigation == "📊 Tableau de Bord & Catalogue":
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
-elif navigation == "🔮 Auto-Classificateur (Option B)":
+elif navigation == "Auto-Classificateur (Option B)":
     st.markdown("<p class='subtitle-text'>Prédisez automatiquement le genre d'un morceau à partir de ses métadonnées sémantiques ou directement depuis son fichier audio MP3</p>", unsafe_allow_html=True)
     
     tab_text, tab_audio = st.tabs(["📝 Classification Sémantique (Texte)", "🔊 Classification Acoustique (Audio MP3)"])
@@ -583,7 +583,7 @@ elif navigation == "🔮 Auto-Classificateur (Option B)":
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- PAGE 3: ENGAGEMENT PREDICTOR (OPTION C) -----------------
-elif navigation == "📈 Engagement Predictor (Option C)":
+elif navigation == "Engagement Predictor (Option C)":
     st.markdown("<p class='subtitle-text'>Prédisez la popularité future d'un morceau (nombre d'écoutes) grâce au modèle XGBoost fait maison</p>", unsafe_allow_html=True)
     
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
@@ -683,7 +683,7 @@ elif navigation == "📈 Engagement Predictor (Option C)":
                 st.markdown(f.read())
 
 # ----------------- PAGE 4: CONVERSATIONAL ASSISTANT (OPTION A) -----------------
-elif navigation == "💬 Assistant IA Gemini (Option A)":
+elif navigation == "Assistant IA Gemini (Option A)":
     st.markdown("<p class='subtitle-text'>Posez des questions sur le catalogue de musique en français et observez les requêtes SQL exécutées en temps réel</p>", unsafe_allow_html=True)
     
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
