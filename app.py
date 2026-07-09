@@ -125,6 +125,59 @@ st.markdown("""
         color: white !important;
         border-color: rgba(255, 255, 255, 0.08) !important;
     }
+    
+    /* Modernized Sidebar Navigation Menu */
+    section[data-testid="stSidebar"] {
+        background-color: #06070a !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    section[data-testid="stSidebar"] .stRadio > label {
+        display: none !important; /* Hide generic "Navigation" label */
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] {
+        gap: 8px !important;
+        padding-top: 10px;
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] label {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.04) !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        margin-bottom: 4px !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(124, 58, 237, 0.15) !important;
+        border-color: rgba(124, 58, 237, 0.3) !important;
+        transform: translateX(4px);
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+        background: linear-gradient(90deg, rgba(124, 58, 237, 0.3) 0%, rgba(219, 39, 119, 0.08) 100%) !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2) !important;
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Clean radio circle elements override */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarker"] {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarker"] {
+        border-color: #db2777 !important;
+        background-color: #7c3aed !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
