@@ -128,8 +128,8 @@ st.markdown("""
     
     /* Modernized Sidebar Navigation Menu */
     section[data-testid="stSidebar"] {
-        background-color: #06070a !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: #08090d !important; /* Zinc 950 / Slate 950 background */
+        border-right: 1px solid rgba(255, 255, 255, 0.04);
     }
     
     section[data-testid="stSidebar"] .stRadio > label {
@@ -137,46 +137,68 @@ st.markdown("""
     }
     
     section[data-testid="stSidebar"] div[role="radiogroup"] {
-        gap: 8px !important;
-        padding-top: 10px;
+        gap: 6px !important;
+        padding-top: 15px;
     }
     
     section[data-testid="stSidebar"] div[role="radiogroup"] label {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-        border: 1px solid rgba(255, 255, 255, 0.04) !important;
-        border-radius: 12px !important;
-        padding: 12px 16px !important;
-        margin-bottom: 4px !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background-color: transparent !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        margin-bottom: 2px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
+        position: relative !important;
     }
     
+    /* Left indicator bar on hover/checked */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
+        content: "" !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 25% !important;
+        height: 50% !important;
+        width: 3px !important;
+        background-color: transparent !important;
+        border-radius: 0 4px 4px 0 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    /* Hover state: subtle background nuance, text brightens, indicator grows slightly */
     section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(124, 58, 237, 0.15) !important;
-        border-color: rgba(124, 58, 237, 0.3) !important;
-        transform: translateX(4px);
+        background-color: rgba(255, 255, 255, 0.03) !important;
+    }
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover div[data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+    }
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover::before {
+        background-color: rgba(139, 92, 246, 0.5) !important;
+        height: 50% !important;
     }
     
+    /* Checked/Selected state: glowing background gradient, active neon indicator */
     section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-        background: linear-gradient(90deg, rgba(124, 58, 237, 0.3) 0%, rgba(219, 39, 119, 0.08) 100%) !important;
-        border-color: #7c3aed !important;
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2) !important;
+        background: linear-gradient(90deg, rgba(139, 92, 246, 0.08) 0%, rgba(236, 72, 153, 0.02) 100%) !important;
+        border-color: rgba(139, 92, 246, 0.1) !important;
+    }
+    
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked)::before {
+        background-color: #a78bfa !important; /* Active purple neon indicator */
+        height: 60% !important;
+        box-shadow: 0 0 10px #a78bfa !important;
     }
     
     section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
-        color: #ffffff !important;
+        color: #a78bfa !important; /* Purple neon text */
         font-weight: 600 !important;
     }
     
-    /* Clean radio circle elements override */
+    /* Hide the ugly default Streamlit radio circles */
     section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stMarker"] {
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarker"] {
-        border-color: #db2777 !important;
-        background-color: #7c3aed !important;
+        display: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
