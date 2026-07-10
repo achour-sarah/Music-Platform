@@ -457,203 +457,151 @@ if navigation == "Tableau de Bord & Catalogue":
 
 # ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
 elif navigation == "Auto-Classificateur (Option B)":
-    st.markdown("<p class='subtitle-text'>Prédisez automatiquement le genre d'un morceau à partir de ses métadonnées sémantiques ou directement depuis son fichier audio MP3</p>", unsafe_allow_html=True)
+    st.markdown("<p class='subtitle-text'>Prédisez automatiquement le genre d'un morceau directement depuis son fichier audio MP3</p>", unsafe_allow_html=True)
     
-    tab_text, tab_audio = st.tabs(["📝 Classification Sémantique (Texte)", "🔊 Classification Acoustique (Audio MP3)"])
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("🔊 Classification Acoustique Directe")
+    st.markdown("Ce modèle utilise **MERT-v1-95M** (Music Understanding Model with Robustness Training) comme extracteur d'embeddings acoustiques profonds (768 dimensions), puis un classifieur entraîné **exclusivement sur les genres FMA Small natifs** pour prédire la catégorie musicale.")  
     
-    with tab_text:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.subheader("🔮 Prédiction par Text-Embedding")
-        
-        # Check if model files exist
-        model_weights_path = os.path.join(MODEL_DIR, "genre_classifier_head.pt")
-        if not os.path.exists(model_weights_path):
-            st.warning("Le modèle sémantique n'est pas encore entraîné.")
-            if st.button("Lancer l'entraînement du modèle (PyTorch / ~1 min)"):
-                with st.spinner("Entraînement sur la base de données..."):
-                    try:
-                        from src.ai.train_classifier import train_model
-                        train_model()
-                        st.success("Modèle entraîné avec succès !")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Erreur d'entraînement : {e}")
+    audio_source = st.radio("Source audio à classifier :", ["📁 Sélectionner un morceau du catalogue", "🎙️ Enregistrer via votre micro", "💻 Importer un fichier depuis votre PC"], key="audio_source_selector")
+    
+    if audio_source == "📁 Sélectionner un morceau du catalogue":
+        # Fetch tracks from DB to check if files are available
+        if not os.path.exists(DB_PATH):
+            st.error("Base de données Gold indisponible.")
         else:
-            # User input fields
-            col_i1, col_i2, col_i3 = st.columns(3)
-            with col_i1:
-                title_input = st.text_input("Titre du morceau", "Synthwave Horizon", key="text_title")
-            with col_i2:
-                artist_input = st.text_input("Nom de l'artiste", "Kavinsky", key="text_artist")
-            with col_i3:
-                album_input = st.text_input("Nom de l'album", "Outrun", key="text_album")
-                
-            if st.button("Classifier par le Texte", key="btn_text_classify"):
-                if title_input and artist_input:
-                    with st.spinner("Analyse sémantique en cours..."):
-                        predicted_genre, confidence = predict_genre(title_input, artist_input, album_input)
-                        
-                    st.markdown("---")
-                    st.markdown(f"### 🎉 Résultat de l'analyse sémantique")
-                    st.markdown(f"Genre prédit : **{predicted_genre}**")
-                    st.progress(confidence)
-                    st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                    st.info("Cette prédiction s'appuie sur le modèle **SentenceTransformer (all-MiniLM-L6-v2)** couplé à une tête PyTorch fine-tunée.")
-                else:
-                    st.error("Veuillez renseigner au moins un titre et un artiste.")
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Model Card view
-        model_card_path = os.path.join(MODEL_DIR, "genre_classifier_model_card.md")
-        if os.path.exists(model_card_path):
-            with st.expander("📄 Afficher la Fiche de Modèle (Model Card)"):
-                with open(model_card_path, "r", encoding="utf-8") as f:
-                    st.markdown(f.read())
-                    
-    with tab_audio:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.subheader("🔊 Classification Acoustique Directe")
-        st.markdown("Ce modèle utilise **MERT-v1-95M** (Music Understanding Model with Robustness Training) comme extracteur d'embeddings acoustiques profonds (768 dimensions), puis un classifieur entraîné **exclusivement sur les genres FMA Small natifs** pour prédire la catégorie musicale.")  
-        
-        audio_source = st.radio("Source audio à classifier :", ["📁 Sélectionner un morceau du catalogue", "🎙️ Enregistrer via votre micro", "💻 Importer un fichier depuis votre PC"], key="audio_source_selector")
-        
-        if audio_source == "📁 Sélectionner un morceau du catalogue":
-            # Fetch tracks from DB to check if files are available
-            if not os.path.exists(DB_PATH):
-                st.error("Base de données Gold indisponible.")
+            conn = get_db_conn()
+            df_audio_tracks = pd.read_sql_query("""
+                SELECT t.track_id, t.title, a.name as artist, t.genre_top
+                FROM tracks t
+                JOIN artists a ON t.artist_id = a.artist_id
+                LIMIT 300;
+            """, conn)
+            conn.close()
+            
+            # Check physical file existence
+            from src.ai.audio_genre_classifier import find_audio_path
+            available_audio_tracks = []
+            for _, row in df_audio_tracks.iterrows():
+                track_id = int(row['track_id'])
+                audio_path = find_audio_path(track_id, BRONZE_DIR)
+                if audio_path:
+                    available_audio_tracks.append({
+                        "id": track_id,
+                        "title": row['title'],
+                        "artist": row['artist'],
+                        "genre_db": row['genre_top'],
+                        "path": audio_path
+                    })
+            
+            if not available_audio_tracks:
+                st.info("Aucun fichier audio MP3 physique trouvé dans la zone Bronze (`data/datalake/bronze/audio/`).")
             else:
-                conn = get_db_conn()
-                df_audio_tracks = pd.read_sql_query("""
-                    SELECT t.track_id, t.title, a.name as artist, t.genre_top
-                    FROM tracks t
-                    JOIN artists a ON t.artist_id = a.artist_id
-                    LIMIT 300;
-                """, conn)
-                conn.close()
+                track_options = {
+                    t["id"]: f"ID {t['id']:06d} - {t['title']} ({t['artist']})" 
+                    for t in available_audio_tracks
+                }
                 
-                # Check physical file existence
-                from src.ai.audio_genre_classifier import find_audio_path
-                available_audio_tracks = []
-                for _, row in df_audio_tracks.iterrows():
-                    track_id = int(row['track_id'])
-                    audio_path = find_audio_path(track_id, BRONZE_DIR)
-                    if audio_path:
-                        available_audio_tracks.append({
-                            "id": track_id,
-                            "title": row['title'],
-                            "artist": row['artist'],
-                            "genre_db": row['genre_top'],
-                            "path": audio_path
-                        })
+                selected_audio_id = st.selectbox(
+                    "Sélectionner un morceau audio MP3 présent dans le Datalake :",
+                    options=list(track_options.keys()),
+                    format_func=lambda x: track_options[x],
+                    key="sel_audio_track"
+                )
                 
-                if not available_audio_tracks:
-                    st.info("Aucun fichier audio MP3 physique trouvé dans la zone Bronze (`data/datalake/bronze/audio/`).")
-                else:
-                    track_options = {
-                        t["id"]: f"ID {t['id']:06d} - {t['title']} ({t['artist']})" 
-                        for t in available_audio_tracks
-                    }
-                    
-                    selected_audio_id = st.selectbox(
-                        "Sélectionner un morceau audio MP3 présent dans le Datalake :",
-                        options=list(track_options.keys()),
-                        format_func=lambda x: track_options[x],
-                        key="sel_audio_track"
-                    )
-                    
-                    selected_track = next(t for t in available_audio_tracks if t["id"] == selected_audio_id)
-                    
-                    # Audio player
-                    st.audio(selected_track["path"], format="audio/mp3")
-                    
-                    if st.button("Lancer la Classification Acoustique", key="btn_audio_classify"):
-                        with st.spinner("Analyse en cours (MERT-v1-95M → embedding 768D → classifieur FMA)..."):
-                            predicted_genre, confidence = predict_genre_from_audio(selected_track["path"])
+                selected_track = next(t for t in available_audio_tracks if t["id"] == selected_audio_id)
+                
+                # Audio player
+                st.audio(selected_track["path"], format="audio/mp3")
+                
+                if st.button("Lancer la Classification Acoustique", key="btn_audio_classify"):
+                    with st.spinner("Analyse en cours (MERT-v1-95M → embedding 768D → classifieur FMA)..."):
+                        predicted_genre, confidence = predict_genre_from_audio(selected_track["path"])
+                        
+                        if predicted_genre:
+                            st.markdown("---")
+                            st.markdown("### 🎉 Résultats de la Classification Acoustique")
                             
-                            if predicted_genre:
-                                st.markdown("---")
-                                st.markdown("### 🎉 Résultats de la Classification Acoustique")
-                                
-                                col_a1, col_a2 = st.columns(2)
-                                with col_a1:
-                                    st.markdown(f"**Genre détecté depuis le signal audio :** `{predicted_genre}`")
-                                    st.progress(confidence)
-                                    st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                                with col_a2:
-                                    st.markdown(f"**Genre déclaré en base de données :** `{selected_track['genre_db']}`")
-                                    if predicted_genre.lower() == selected_track['genre_db'].lower():
-                                        st.success("✅ Match parfait entre le signal audio et les métadonnées déclarées !")
-                                    else:
-                                        st.info("ℹ️ Le modèle propose une classification alternative (souvent logique pour les genres croisés).")
-                            else:
-                                st.error(f"Échec de l'analyse : {confidence}")
+                            col_a1, col_a2 = st.columns(2)
+                            with col_a1:
+                                st.markdown(f"**Genre détecté depuis le signal audio :** `{predicted_genre}`")
+                                st.progress(confidence)
+                                st.markdown(f"Score de confiance : **{confidence:.2%}**")
+                            with col_a2:
+                                st.markdown(f"**Genre déclaré en base de données :** `{selected_track['genre_db']}`")
+                                if predicted_genre.lower() == selected_track['genre_db'].lower():
+                                    st.success("✅ Match parfait entre le signal audio et les métadonnées déclarées !")
+                                else:
+                                    st.info("ℹ️ Le modèle propose une classification alternative (souvent logique pour les genres croisés).")
+                        else:
+                            st.error(f"Échec de l'analyse : {confidence}")
+    
+    elif audio_source == "🎙️ Enregistrer via votre micro":
+        st.markdown("### 🎙️ Enregistrement Micro en Direct")
+        st.markdown("Cliquez sur le micro ci-dessous pour démarrer l'enregistrement de votre voix ou d'un son ambiant, puis ré-appuyez pour l'arrêter.")
         
-        elif audio_source == "🎙️ Enregistrer via votre micro":
-            st.markdown("### 🎙️ Enregistrement Micro en Direct")
-            st.markdown("Cliquez sur le micro ci-dessous pour démarrer l'enregistrement de votre voix ou d'un son ambiant, puis ré-appuyez pour l'arrêter.")
+        # Streamlit mic recording widget
+        recorded_audio = st.audio_input("Enregistrer un extrait musical :", key="mic_recorder")
+        
+        if recorded_audio is not None:
+            st.success("Audio enregistré avec succès !")
+            st.audio(recorded_audio)
             
-            # Streamlit mic recording widget
-            recorded_audio = st.audio_input("Enregistrer un extrait musical :", key="mic_recorder")
-            
-            if recorded_audio is not None:
-                st.success("Audio enregistré avec succès !")
-                st.audio(recorded_audio)
+            if st.button("Lancer la Classification du son enregistré", key="btn_classify_recorded"):
+                # Save stream to temporary file in Gold datalake
+                temp_dir = os.path.join(BASE_DIR, "data", "datalake", "gold")
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_path = os.path.join(temp_dir, "temp_recorded.wav")
                 
-                if st.button("Lancer la Classification du son enregistré", key="btn_classify_recorded"):
-                    # Save stream to temporary file in Gold datalake
-                    temp_dir = os.path.join(BASE_DIR, "data", "datalake", "gold")
-                    os.makedirs(temp_dir, exist_ok=True)
-                    temp_path = os.path.join(temp_dir, "temp_recorded.wav")
+                with open(temp_path, "wb") as f:
+                    f.write(recorded_audio.getvalue())
                     
-                    with open(temp_path, "wb") as f:
-                        f.write(recorded_audio.getvalue())
+                with st.spinner("Analyse spectrale du son enregistré..."):
+                    predicted_genre, confidence = predict_genre_from_audio(temp_path)
+                    
+                    if predicted_genre:
+                        st.markdown("---")
+                        st.markdown("### 🎉 Résultats de la Classification Acoustique (Micro)")
+                        st.markdown(f"**Genre détecté depuis votre micro :** `{predicted_genre}`")
+                        st.progress(confidence)
+                        st.markdown(f"Score de confiance : **{confidence:.2%}**")
+                        st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
+                    else:
+                        st.error(f"Échec de l'analyse : {confidence}")
                         
-                    with st.spinner("Analyse spectrale du son enregistré..."):
-                        predicted_genre, confidence = predict_genre_from_audio(temp_path)
-                        
-                        if predicted_genre:
-                            st.markdown("---")
-                            st.markdown("### 🎉 Résultats de la Classification Acoustique (Micro)")
-                            st.markdown(f"**Genre détecté depuis votre micro :** `{predicted_genre}`")
-                            st.progress(confidence)
-                            st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                            st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
-                        else:
-                            st.error(f"Échec de l'analyse : {confidence}")
-                            
-        else:
-            st.markdown("### 💻 Importer un fichier depuis votre PC")
-            st.markdown("Glissez-déposez ou parcourez vos fichiers pour sélectionner un morceau au format `.mp3` ou `.wav`.")
+    else:
+        st.markdown("### 💻 Importer un fichier depuis votre PC")
+        st.markdown("Glissez-déposez ou parcourez vos fichiers pour sélectionner un morceau au format `.mp3` ou `.wav`.")
+        
+        uploaded_file = st.file_uploader("Sélectionner un fichier audio :", type=["mp3", "wav"], key="file_uploader")
+        
+        if uploaded_file is not None:
+            st.success("Fichier importé avec succès !")
+            st.audio(uploaded_file)
             
-            uploaded_file = st.file_uploader("Sélectionner un fichier audio :", type=["mp3", "wav"], key="file_uploader")
-            
-            if uploaded_file is not None:
-                st.success("Fichier importé avec succès !")
-                st.audio(uploaded_file)
+            if st.button("Lancer la Classification du fichier importé", key="btn_classify_uploaded"):
+                # Save stream to temporary file in Gold datalake
+                temp_dir = os.path.join(BASE_DIR, "data", "datalake", "gold")
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_path = os.path.join(temp_dir, "temp_uploaded.wav")
                 
-                if st.button("Lancer la Classification du fichier importé", key="btn_classify_uploaded"):
-                    # Save stream to temporary file in Gold datalake
-                    temp_dir = os.path.join(BASE_DIR, "data", "datalake", "gold")
-                    os.makedirs(temp_dir, exist_ok=True)
-                    temp_path = os.path.join(temp_dir, "temp_uploaded.wav")
+                with open(temp_path, "wb") as f:
+                    f.write(uploaded_file.getvalue())
                     
-                    with open(temp_path, "wb") as f:
-                        f.write(uploaded_file.getvalue())
+                with st.spinner("Analyse spectrale du fichier importé..."):
+                    predicted_genre, confidence = predict_genre_from_audio(temp_path)
+                    
+                    if predicted_genre:
+                        st.markdown("---")
+                        st.markdown("### 🎉 Résultats de la Classification Acoustique (Fichier)")
+                        st.markdown(f"**Genre détecté depuis le fichier :** `{predicted_genre}`")
+                        st.progress(confidence)
+                        st.markdown(f"Score de confiance : **{confidence:.2%}**")
+                        st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
+                    else:
+                        st.error(f"Échec de l'analyse : {confidence}")
                         
-                    with st.spinner("Analyse spectrale du fichier importé..."):
-                        predicted_genre, confidence = predict_genre_from_audio(temp_path)
-                        
-                        if predicted_genre:
-                            st.markdown("---")
-                            st.markdown("### 🎉 Résultats de la Classification Acoustique (Fichier)")
-                            st.markdown(f"**Genre détecté depuis le fichier :** `{predicted_genre}`")
-                            st.progress(confidence)
-                            st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                            st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
-                        else:
-                            st.error(f"Échec de l'analyse : {confidence}")
-                            
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- PAGE 3: ENGAGEMENT PREDICTOR (OPTION C) -----------------
 elif navigation == "Engagement Predictor (Option C)":
