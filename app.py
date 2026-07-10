@@ -311,14 +311,7 @@ with st.sidebar:
             "Gouvernance & Pipelines"
         ]
     )
-    
-    st.markdown("---")
-    st.markdown("### Status des Zones")
-    st.markdown("🟢 **Bronze (Raw)**: Opérationnel")
-    st.markdown("🟢 **Silver (Cleaned)**: Opérationnel")
-    st.markdown("🟢 **Gold (Curated)**: Opérationnel")
-    
-    st.markdown("<br><br><p style='text-align: center; font-size: 0.8rem; color: #64748b;'>Groupe MSI-5-26-BD<br>Juillet 2026</p>", unsafe_allow_html=True)
+
 
 # Main Application Layout
 st.markdown("<h1 class='title-gradient'>Music Analytics & IA Platform</h1>", unsafe_allow_html=True)
@@ -777,8 +770,8 @@ elif navigation == "Assistant IA Gemini (Option A)":
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            if "sql" in message and message["sql"]:
-                st.markdown(f"<div class='sql-query-box'>🔍 Requête SQL exécutée :<br><code>{message['sql']}</code></div>", unsafe_allow_html=True)
+            # SQL query execution log is kept internally but not displayed to end-user
+            pass
                 
     # Accept user input
     user_input = st.chat_input("Ex: Quel est l'artiste le plus écouté du catalogue ?")
@@ -798,8 +791,8 @@ elif navigation == "Assistant IA Gemini (Option A)":
         # Display assistant response
         with st.chat_message("assistant"):
             st.markdown(answer)
-            if sql_query:
-                st.markdown(f"<div class='sql-query-box'>🔍 Requête SQL exécutée :<br><code>{sql_query}</code></div>", unsafe_allow_html=True)
+            # SQL query execution log is kept internally but not displayed to end-user
+            pass
                 
         # Add to history
         st.session_state.messages.append({
