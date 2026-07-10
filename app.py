@@ -456,16 +456,16 @@ if navigation == "Tableau de Bord & Catalogue":
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
+# ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
 elif navigation == "Auto-Classificateur (Option B)":
-    st.markdown("<p class='subtitle-text'>Prédisez automatiquement le genre d'un morceau directement depuis son fichier audio MP3</p>", unsafe_allow_html=True)
+    st.markdown("<p class='subtitle-text'>Classification acoustique de genre musical via MERT & XGBoost</p>", unsafe_allow_html=True)
     
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.subheader("🔊 Classification Acoustique Directe")
-    st.markdown("Ce modèle utilise **MERT-v1-95M** (Music Understanding Model with Robustness Training) comme extracteur d'embeddings acoustiques profonds (768 dimensions), puis un classifieur entraîné **exclusivement sur les genres FMA Small natifs** pour prédire la catégorie musicale.")  
+    st.subheader("Classification Acoustique")
     
-    audio_source = st.radio("Source audio à classifier :", ["📁 Sélectionner un morceau du catalogue", "🎙️ Enregistrer via votre micro", "💻 Importer un fichier depuis votre PC"], key="audio_source_selector")
+    audio_source = st.radio("Source audio :", ["📂 Catalogue Datalake", "🎙️ Enregistrement Micro", "📤 Importer un fichier"], key="audio_source_selector")
     
-    if audio_source == "📁 Sélectionner un morceau du catalogue":
+    if audio_source == "📂 Catalogue Datalake":
         # Fetch tracks from DB to check if files are available
         if not os.path.exists(DB_PATH):
             st.error("Base de données Gold indisponible.")
@@ -503,7 +503,7 @@ elif navigation == "Auto-Classificateur (Option B)":
                 }
                 
                 selected_audio_id = st.selectbox(
-                    "Sélectionner un morceau audio MP3 présent dans le Datalake :",
+                    "Choisir un morceau dans le Datalake :",
                     options=list(track_options.keys()),
                     format_func=lambda x: track_options[x],
                     key="sel_audio_track"
@@ -536,9 +536,9 @@ elif navigation == "Auto-Classificateur (Option B)":
                         else:
                             st.error(f"Échec de l'analyse : {confidence}")
     
-    elif audio_source == "🎙️ Enregistrer via votre micro":
-        st.markdown("### 🎙️ Enregistrement Micro en Direct")
-        st.markdown("Cliquez sur le micro ci-dessous pour démarrer l'enregistrement de votre voix ou d'un son ambiant, puis ré-appuyez pour l'arrêter.")
+    elif audio_source == "🎙️ Enregistrement Micro":
+        st.markdown("### Enregistrement Direct")
+        st.markdown("Enregistrez un court extrait audio via votre microphone.")
         
         # Streamlit mic recording widget
         recorded_audio = st.audio_input("Enregistrer un extrait musical :", key="mic_recorder")
@@ -565,13 +565,12 @@ elif navigation == "Auto-Classificateur (Option B)":
                         st.markdown(f"**Genre détecté depuis votre micro :** `{predicted_genre}`")
                         st.progress(confidence)
                         st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                        st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
                     else:
                         st.error(f"Échec de l'analyse : {confidence}")
                         
     else:
-        st.markdown("### 💻 Importer un fichier depuis votre PC")
-        st.markdown("Glissez-déposez ou parcourez vos fichiers pour sélectionner un morceau au format `.mp3` ou `.wav`.")
+        st.markdown("### Importer un fichier")
+        st.markdown("Sélectionnez un fichier audio local.")
         
         uploaded_file = st.file_uploader("Sélectionner un fichier audio :", type=["mp3", "wav"], key="file_uploader")
         
@@ -597,7 +596,6 @@ elif navigation == "Auto-Classificateur (Option B)":
                         st.markdown(f"**Genre détecté depuis le fichier :** `{predicted_genre}`")
                         st.progress(confidence)
                         st.markdown(f"Score de confiance : **{confidence:.2%}**")
-                        st.info("Le signal a été décodé, rééchantillonné à 16 kHz, puis traité par MERT-v1-95M (backbone gelé). Le genre est prédit par le classifieur entraîné sur FMA Small.")
                     else:
                         st.error(f"Échec de l'analyse : {confidence}")
                         
