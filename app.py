@@ -307,8 +307,7 @@ with st.sidebar:
             "Tableau de Bord & Catalogue",
             "Auto-Classificateur (Option B)",
             "Engagement Predictor (Option C)",
-            "Assistant IA Gemini (Option A)",
-            "Gouvernance & Pipelines"
+            "Assistant IA Gemini (Option A)"
         ]
     )
 
@@ -760,109 +759,3 @@ elif navigation == "Assistant IA Gemini (Option A)":
     """)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ----------------- PAGE 5: GOVERNANCE & PIPELINE MONITOR -----------------
-else:
-    st.markdown("<p class='subtitle-text'>Consultez la grille de classification RGPD, le lignage des données et supervisez les runs Prefect</p>", unsafe_allow_html=True)
-    
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.subheader("🛡️ Grille de Classification des Données (Milestone 5)")
-    st.markdown("Cette classification garantit la conformité RGPD et définit la gouvernance de notre Datalake.")
-    
-    # Classification Table
-    class_data = pd.DataFrame({
-        "Table/Source": ["genres", "albums", "tracks", "artists", "audio (MP3)"],
-        "Classe": ["Publique", "Publique / Interne", "Publique / Interne", "Publique / Interne", "Confidentielle"],
-        "Définition": [
-            "Diffusable sans restriction",
-            "Usage restreint à l'organisation",
-            "Usage restreint à l'organisation",
-            "Usage restreint à l'organisation (Pers. Publiques)",
-            "Donnée métier / Droits d'auteur gérés"
-        ],
-        "Contraintes RGPD / Sécurité": [
-            "Aucune restriction particulière",
-            "Accès limité aux membres du projet",
-            "Accès limité aux membres du projet",
-            "Usage interne, pas de restriction de transfert",
-            "Chiffrement, pas d'envoi brut à des API non maîtrisées"
-        ]
-    })
-    st.table(class_data)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.subheader("⛓️ Lignage des Données (Data Lineage)")
-    
-    st.markdown("""
-    ```mermaid
-    graph LR
-        subgraph Zone Bronze (Raw)
-            csv_tracks[tracks.csv]
-            csv_genres[genres.csv]
-            mp3_files[Fichiers Audio .mp3]
-        end
-
-        subgraph Zone Silver (Staging)
-            pq_tracks[tracks.parquet]
-            pq_genres[genres.parquet]
-            pq_albums[albums.parquet]
-            pq_artists[artists.parquet]
-        end
-
-        subgraph Zone Gold (Curated)
-            sqlite_db[(catalog.db)]
-            pq_features[features_engagement.parquet]
-        end
-
-        csv_tracks -->|Nettoyage & Séparation| pq_tracks
-        csv_tracks -->|Dédoublonnage Albums| pq_albums
-        csv_tracks -->|Dédoublonnage Artistes| pq_artists
-        csv_genres -->|Nettoyage & Typage| pq_genres
-
-        pq_tracks -->|Jointures & Index| sqlite_db
-        pq_albums -->|Jointures & Index| sqlite_db
-        pq_artists -->|Jointures & Index| sqlite_db
-        pq_genres -->|Jointures & Index| sqlite_db
-
-        pq_tracks & pq_albums & pq_artists -->|Feature Engineering| pq_features
-    ```
-    """, unsafe_allow_html=True)
-    st.markdown("*(Rendu automatique du graphe de lignage via Mermaid)*")
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.subheader("⚡ Superviseur du Pipeline ETL (Prefect Runs)")
-    
-    # Load SQLite databases runs if we want, or just read files. We can check the parquet files timestamp.
-    st.markdown("#### Dernière exécution du pipeline Prefect")
-    
-    # Check modification times
-    db_mtime = "Inconnu"
-    if os.path.exists(DB_PATH):
-        import datetime
-        db_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(DB_PATH)).strftime('%Y-%m-%d %H:%M:%S')
-        
-    st.markdown(f"""
-    - **Statut global du Pipeline** : 🟢 **Completed**
-    - **Dernier run enregistré** : `{db_mtime}`
-    - **Mode de déploiement** : Local (Idempotent)
-    - **Moteur d'orchestration** : Prefect v3
-    """)
-    
-    if st.button("Afficher la configuration du DAG Prefect"):
-        st.code("""
-@flow(name="Music Platform ETL Pipeline", log_prints=True)
-def run_music_etl_pipeline():
-    # Task 1: Ingest Raw data into Bronze
-    raw_paths = ingest_raw_data()
-    
-    # Task 2: Clean, type and save Parquet to Silver
-    silver_paths = clean_and_stage(raw_paths)
-    
-    # Task 3: Build Gold SQLite Relational Database
-    db_path = build_catalog_db(silver_paths)
-    
-    # Task 4: Generate Gold Features for ML
-    features_parquet = generate_gold_features(silver_paths)
-        """)
-    st.markdown("</div>", unsafe_allow_html=True)
