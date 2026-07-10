@@ -370,7 +370,6 @@ if navigation == "Tableau de Bord & Catalogue":
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Interactive Catalog Browser
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.subheader("🎵 Explorateur de Catalogue Relationnel")
         
         conn = get_db_conn()
@@ -451,8 +450,6 @@ if navigation == "Tableau de Bord & Catalogue":
                     else:
                         st.warning(f"Audio indisponible dans le sous-ensemble Bronze (ID : {selected_track_id}).")
                         st.info("Note: Seuls les premiers dossiers audio (000, 001, etc.) ont été importés dans la zone Bronze pour optimiser le stockage local.")
-                        
-        st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
 # ----------------- PAGE 2: GENRE CLASSIFIER (OPTION B) -----------------
@@ -704,7 +701,6 @@ elif navigation == "Engagement Predictor (Option C)":
 elif navigation == "Assistant IA Gemini (Option A)":
     st.markdown("<p class='subtitle-text'>Posez des questions sur le catalogue de musique en français et observez les requêtes SQL exécutées en temps réel</p>", unsafe_allow_html=True)
     
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.subheader("💬 Assistant Intelligent RAG / Text-to-SQL (Option A)")
     
     # Session state to store conversation history
@@ -745,8 +741,6 @@ elif navigation == "Assistant IA Gemini (Option A)":
             "content": answer,
             "sql": sql_query
         })
-        
-    st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.markdown("""
